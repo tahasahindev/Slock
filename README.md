@@ -1,122 +1,142 @@
-# 🔒 Slock - Güvenli Şifreli Metin Editörü
+# 🔒 Slock - Secure Encrypted Text Editor
 
 <p align="center">
   <img src="https://img.shields.io/badge/Electron-v33.4-47848F?style=for-the-badge&logo=electron&logoColor=white" alt="Electron" />
   <img src="https://img.shields.io/badge/TypeScript-5.6-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Vite-6.0-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/Security-AES--256--GCM-10B981?style=for-the-badge&logo=letsencrypt&logoColor=white" alt="AES-256-GCM" />
-  <img src="https://img.shields.io/badge/License-MIT-blue.style=for-the-badge" alt="License" />
+  <img src="https://img.shields.io/badge/Project-AI%20Assisted%20Hobby-8B5CF6?style=for-the-badge&logo=openai&logoColor=white" alt="AI Assisted Hobby Project" />
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
 </p>
 
-**Slock**, hassas metin belgelerinizi askeri düzeyde **AES-256-GCM** şifreleme ile koruyan, modern bir masaüstü metin düzenleyicisidir. Dışarıdan bakıldığında şık ve minimalist bir kod/metin editörü gibi görünür; ancak dosyalarınızı doğrudan şifrelenmiş (`.slock`) formatta saklar ve doğru anahtar şifre girilmeden içeriğin okunmasına veya değiştirilmesine izin vermez.
+**Slock** is a modern desktop text editor designed to protect your sensitive notes and documents with military-grade **AES-256-GCM** encryption. At first glance, it looks like a sleek, minimalist text editor; however, it stores your files in an encrypted format (`.slock`) and prevents reading or modifying content without the correct secret key.
+
+> [!NOTE]
+> 🤖 **AI-Assisted Hobby Project**  
+> This application is a hobby project created for experimental and learning purposes, co-developed with **Antigravity AI**. While industry-standard cryptographic algorithms (AES-256-GCM + PBKDF2-HMAC-SHA512 with 600,000 iterations) and clean SOLID design principles have been strictly implemented, please use it responsibly.
 
 ---
 
-## 🌟 Öne Çıkan Özellikler
+## 🌟 Key Features
 
-- **🔒 Askeri Düzeyde Kimlik Doğrulamalı Şifreleme (AEAD)**: `AES-256-GCM` algoritması ile verilerin hem gizliliği korunur hem de veri bütünlüğü (tamper verification) sağlanır.
-- **🔑 Güçlü Anahtar Türetme (KDF)**: OWASP standartlarına uygun `PBKDF2-HMAC-SHA512` algoritması, 32-byte kriptografik rastgele tuz (salt) ve **600.000 iterasyon** ile kaba kuvvet (brute-force) saldırılarına karşı tam koruma sağlar.
-- **🎨 Modern Dark Mode Editör Arayüzü**:
-  - Dinamik satır numaraları gutter'ı
-  - Canlı karakter, kelime ve satır sayaçları
-  - Gerçek zamanlı şifre mukavemet göstergesi (Password Strength Meter)
-  - Şifre göster/gizle göz butonu
-  - Yalın buton araç çubuğu (`Yeni`, `Dosya Aç`, `Şifrele & Kaydet`)
-  - Klavye kısayolları (`Ctrl+N`, `Ctrl+O`, `Ctrl+S`)
-- **🛡️ Kenar Durum (Edge-Case) ve Bellek Güvenliği**:
-  - Şifreleme işlemlerinden hemen sonra türetilmiş anahtar bellekten tamamen silinir (`Buffer.fill(0)`).
-  - Şifreli dosya kurcalandığında veya hatalı anahtar girildiğinde cryptographic exception maskelenir.
-  - Kaydedilmemiş değişiklikleri koruma mekanizması (Unsaved Guard).
+- **🔒 Military-Grade Authenticated Encryption (AEAD)**: Uses `AES-256-GCM` to guarantee both data confidentiality and payload integrity (tamper detection).
+- **🔑 Robust Key Derivation (KDF)**: Adheres to OWASP recommendations with `PBKDF2-HMAC-SHA512`, 32-byte cryptographically secure random salts, and **600,000 iterations** to withstand brute-force attacks.
+- **🎨 Modern Dark Mode UI**:
+  - Dynamic line numbers gutter
+  - Real-time line, word, and character counters
+  - Real-time password strength meter
+  - Password show/hide toggle
+  - Status badges (`New Document`, `Encrypted`, `Unsaved Changes`)
+  - Essential keyboard shortcuts (`Ctrl+N`, `Ctrl+O`, `Ctrl+S`)
+- **🛡️ Edge-Case Safety & Memory Hygiene**:
+  - Derived encryption key buffers are zeroed out (`Buffer.fill(0)`) immediately after crypto operations.
+  - Cryptographic errors are masked to prevent state leaking if a file is tampered with or an incorrect key is provided.
+  - Unsaved changes guard to prevent accidental data loss.
 
 ---
 
-## 📐 Mimari ve SOLID Prensipleri
+## 📐 Architecture & SOLID Principles
 
-Slock, sürdürülebilir, test edilebilir ve temiz kod (Clean Code) standartlarına tam uyumlu katmanlı bir mimari üzerine inşa edilmiştir:
+Slock is built on a clean, testable, multi-layered architecture following strict **Clean Code** standards:
 
 ```
 src/
-├── shared/                   # Ortak Veri Tipleri & Sabitler
-│   ├── types.ts              # IPC & Şifreleme Veri Sözleşmeleri
-│   └── constants.ts          # Kriptografik Sabitler
-├── main/                     # Electron Ana Süreci (Node.js)
-│   ├── main.ts               # Uygulama Yaşam Döngüsü & Güvenlik Politikaları
-│   ├── preload.cjs           # Güvenli CommonJS contextBridge IPC Köprüsü
-│   ├── services/             # İş Mantığı Servisleri
-│   │   ├── crypto/           # AES-256-GCM & PBKDF2 Şifreleme Modülleri
-│   │   ├── file/             # Dosya G/Ç ve Güvenlik Limitleri
-│   │   └── dialog/           # Yerel Dosya İletişim Pencereleri
-│   └── ipc/                  # IPC Çağrı Yönlendiricileri (Composition Root)
-└── renderer/                 # Arayüz Süreci (Vite + TypeScript + HTML/CSS)
-    ├── index.html            # UI İskeleti
-    ├── styles/               # CSS Tasarım Sistemi & Modallar
-    └── src/                  # UI Bileşenleri & Kontrolcüler
+├── shared/                   # Shared Data Contracts & Constants
+│   ├── types.ts              # IPC & Crypto Interfaces
+│   └── constants.ts          # Cryptographic Constants
+├── main/                     # Electron Main Process (Node.js)
+│   ├── main.ts               # App Lifecycle & Security Policies
+│   ├── preload.cjs           # Secure CommonJS contextBridge IPC Bridge
+│   ├── services/             # Domain Services
+│   │   ├── crypto/           # AES-256-GCM & PBKDF2 Implementations
+│   │   ├── file/             # File I/O & Safety Limits
+│   │   └── dialog/           # Native OS Dialog Services
+│   └── ipc/                  # IPC Handlers (Composition Root)
+└── renderer/                 # UI Renderer (Vite + TypeScript + HTML/CSS)
+    ├── index.html            # App Layout
+    ├── styles/               # Glassmorphic Dark Theme CSS System
+    └── src/                  # UI Components & App Controller
 ```
 
+### Applied SOLID Principles:
+- **Single Responsibility Principle (SRP)**: Encryption (`AesGcmCryptoService`), key derivation (`Pbkdf2KdfService`), disk operations (`LocalFileService`), and IPC routing are decoupled.
+- **Open/Closed Principle (OCP)**: Crypto services implement interfaces (`ICryptoService`, `IPbkdf2KdfService`), allowing future algorithm strategies (e.g. Argon2id) to be introduced without modifying existing caller code.
+- **Liskov Substitution Principle (LSP)**: All services strictly adhere to interface contracts and can be substituted with mock services for testing.
+- **Interface Segregation Principle (ISP)**: Interfaces are lean, focused, and minimal.
+- **Dependency Inversion Principle (DIP)**: IPC handlers depend on service abstractions rather than concrete classes, injected via `registerIpcHandlers`.
+
 ---
 
-## 🔒 Güvenlik Modeli ve Önlemleri
+## 🔒 Security Model
 
-| Güvenlik Katmanı | Kullanılan Teknoloji / Yöntem | Açıklama |
+| Security Layer | Technology / Implementation | Details |
 | :--- | :--- | :--- |
-| **Şifreleme Algoritması** | `AES-256-GCM` | 256-bit gizlilik ve 128-bit Kimlik Doğrulama Etiketi (Auth Tag) |
-| **Anahtar Türetimi (KDF)** | `PBKDF2-HMAC-SHA512` | 600.000 Iteration, 32-byte Cryptographic Salt |
-| **İnterpole Rastgelelik** | `crypto.randomBytes` | Her şifrelemede benzersiz 12-byte IV (Nonce) üretimi |
-| **Bellek Temizliği** | `Buffer.fill(0)` | Hassas key buffer'ları işlem sonrasında bellekten sıfırlanır |
-| **Electron İzolasyonu** | `contextIsolation: true` | Preload bridge üzerinden Renderer sürecine güvenli izolasyon |
-| **İçerik Güvenlik Politikası** | `Content-Security-Policy` | Dışarıdan betik çalıştırılması (XSS) engellenmiştir |
+| **Encryption Algorithm** | `AES-256-GCM` | 256-bit confidentiality + 128-bit Authentication Tag |
+| **Key Derivation (KDF)** | `PBKDF2-HMAC-SHA512` | 600,000 Iterations + 32-byte Cryptographic Salt |
+| **Nonce Generation** | `crypto.randomBytes` | Unique 12-byte IV generated per encryption operation |
+| **Memory Sanitization** | `Buffer.fill(0)` | Sensitive key buffers wiped from Node.js memory after use |
+| **Electron Isolation** | `contextIsolation: true` | Safe IPC bridge isolating Renderer from Node.js runtime |
+| **Content Security Policy** | `Content-Security-Policy` | Restricts script execution and prevents XSS attacks |
 
 ---
 
-## 🚀 Kurulum ve Yerel Geliştirme
+## 🚀 Installation & Local Development
 
-### Gereksinimler
-- **Node.js**: v20+ veya üzeri
-- **npm**: v9+ veya üzeri
+### Requirements
+- **Node.js**: v20+ or higher
+- **npm**: v9+ or higher
 
-### 1. Bağımlılıkları Yükleyin
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/slock.git
+cd slock
+```
+
+### 2. Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. Kriptografik Güvenlik Testlerini Çalıştırın
+### 3. Run Cryptographic Security Verification Tests
 ```bash
 npm run test:crypto
 ```
 
-### 3. Geliştirici Modunda Çalıştırın
+### 4. Launch Development Mode
 ```bash
 npm run dev
 ```
 
 ---
 
-## 📦 Masaüstü Uygulaması (Build / Package) Oluşturma
+## 📦 Building Standalone Desktop Executable (`.exe`)
 
-Slock uygulamasını bir Windows yükleyicisi (`.exe`) veya taşınabilir tek dosya uygulama (Portable `.exe`) olarak derlemek için aşağıdaki komutları kullanabilirsiniz:
+You can package Slock into a Windows Installer (`.exe`) or a Portable single-file executable using `electron-builder`:
 
-### Windows Kurulum Dosyası (`.exe` Yükleyici) Oluşturma:
+### Create Windows Setup Installer (`.exe`):
 ```bash
 npm run package
 ```
+*Outputs **`Slock Setup 1.0.0.exe`** inside the `release/` directory.*
 
-### Taşınabilir Windows Uygulaması (Portable `.exe`) Oluşturma:
+### Create Portable Windows Executable (Portable `.exe`):
 ```bash
 npm run package:portable
 ```
+*Outputs a standalone, zero-installation **`Slock 1.0.0.exe`** inside the `release/` directory.*
 
 ---
 
-## ⌨️ Klavye Kısayolları
+## ⌨️ Keyboard Shortcuts
 
-| Kısayol | İşlev |
+| Shortcut | Action |
 | :--- | :--- |
-| <kbd>Ctrl</kbd> + <kbd>N</kbd> | Yeni metin belgesi oluşturur |
-| <kbd>Ctrl</kbd> + <kbd>O</kbd> | Şifreli `.slock` dosyasını seçer ve şifre çözme penceresini açar |
-| <kbd>Ctrl</kbd> + <kbd>S</kbd> | Mevcut metni anahtar şifre ile şifreler ve kaydeder |
+| <kbd>Ctrl</kbd> + <kbd>N</kbd> | Creates a new blank document |
+| <kbd>Ctrl</kbd> + <kbd>O</kbd> | Prompts file picker to select and decrypt a `.slock` file |
+| <kbd>Ctrl</kbd> + <kbd>S</kbd> | Encrypts text with key and saves to `.slock` file |
 
 ---
 
-## 📄 Lisans
+## 📄 License
 
-Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
+This project is licensed under the [MIT License](LICENSE).
