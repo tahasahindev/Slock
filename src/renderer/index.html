@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slock - Güvenli Şifreli Metin Editörü</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles/main.css">
+</head>
+<body>
+  <div id="app" class="app-container">
+    <!-- Header Navbar -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <span class="brand-title">SLOCK</span>
+          <span class="brand-subtitle">AES-256-GCM Vault</span>
+        </div>
+      </div>
+
+      <div class="file-status-bar">
+        <span class="file-name-badge" id="current-filename">Yeni Belge.slock</span>
+        <span class="status-badge" id="file-status-badge">
+          <span class="status-dot"></span>
+          <span class="status-text">Yeni Belge</span>
+        </span>
+      </div>
+
+      <div class="action-toolbar">
+        <button id="btn-new" class="btn btn-secondary" title="Yeni Metin Oluştur (Ctrl+N)">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+          Yeni
+        </button>
+
+        <button id="btn-open" class="btn btn-secondary" title="Şifreli Dosya Aç (Ctrl+O)">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Dosya Aç
+        </button>
+
+        <button id="btn-save" class="btn btn-primary" title="Şifrele ve Kaydet (Ctrl+S)">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          Şifrele & Kaydet
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace / Text Editor Area -->
+    <main class="editor-workspace">
+      <div class="editor-wrapper">
+        <div class="line-numbers" id="line-numbers">1</div>
+        <textarea id="editor-textarea" spellcheck="false" placeholder="Şifrelenecek metninizi buraya yazın..."></textarea>
+      </div>
+    </main>
+
+    <!-- Bottom Status Bar -->
+    <footer class="app-statusbar">
+      <div class="status-left">
+        <span class="status-item" id="counter-lines">Satır: 1</span>
+        <span class="status-item" id="counter-words">Kelime: 0</span>
+        <span class="status-item" id="counter-chars">Karakter: 0</span>
+      </div>
+      <div class="status-right">
+        <span class="crypto-tag">AES-256-GCM / PBKDF2-SHA512 (600k)</span>
+      </div>
+    </footer>
+
+    <!-- Password Modal -->
+    <div id="modal-password" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <h3 id="modal-title">Şifre Anahtarı Girin</h3>
+          </div>
+          <button id="modal-close-btn" class="modal-close">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <p id="modal-description" class="modal-desc">Dosyanın şifresini çözmek için anahtarı girin.</p>
+          
+          <div class="form-group">
+            <label for="input-password">Anahtar Şifre</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="input-password" placeholder="Anahtar şifreniz..." autocomplete="off" />
+              <button id="btn-toggle-password" type="button" class="btn-toggle-eye" title="Şifreyi Göster/Gizle">
+                👁️
+              </button>
+            </div>
+          </div>
+
+          <!-- Password strength gauge (visible when setting a new password) -->
+          <div id="password-strength-container" class="form-group hidden">
+            <div class="strength-label">
+              <span>Şifre Gücü:</span>
+              <strong id="strength-text">Çok Zayıf</strong>
+            </div>
+            <div class="strength-bar-bg">
+              <div id="strength-bar-fill" class="strength-bar-fill strength-weak"></div>
+            </div>
+          </div>
+
+          <!-- Confirm Password (visible when setting key to encrypt) -->
+          <div id="form-group-confirm" class="form-group hidden">
+            <label for="input-password-confirm">Anahtar Şifre (Tekrar)</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="input-password-confirm" placeholder="Anahtar şifreyi tekrar girin..." autocomplete="off" />
+            </div>
+          </div>
+
+          <div id="modal-error-banner" class="modal-error-banner hidden">
+            <span id="modal-error-text">Hatalı şifre!</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="btn-modal-cancel" class="btn btn-secondary">İptal</button>
+          <button id="btn-modal-submit" class="btn btn-primary">Tamam</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal for Unsaved Changes -->
+    <div id="modal-confirm" class="modal-overlay hidden">
+      <div class="modal-card modal-card-small">
+        <div class="modal-header">
+          <h3>Kaydedilmemiş Değişiklikler</h3>
+        </div>
+        <div class="modal-body">
+          <p>Mevcut metinde kaydedilmemiş değişiklikleriniz var. Devam edilsin mi?</p>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-confirm-cancel" class="btn btn-secondary">İptal</button>
+          <button id="btn-confirm-proceed" class="btn btn-danger">Değişiklikleri At ve Devam Et</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <script type="module" src="./src/app.ts"></script>
+</body>
+</html>

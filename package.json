@@ -1,0 +1,40 @@
+{
+  "name": "slock",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AES-256-GCM tabanlı güvenli, şifreli metin düzenleyici",
+  "main": "dist/main/main.js",
+  "author": "Slock Open Source",
+  "license": "MIT",
+  "scripts": {
+    "dev": "npm run build && electron .",
+    "compile": "tsc -p tsconfig.main.json && vite build",
+    "build": "node scripts/build.js",
+    "test:crypto": "tsc -p tsconfig.test.json && node dist/tests/crypto.test.js",
+    "package": "npm run build && electron-builder --win nsis",
+    "package:portable": "npm run build && electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.3"
+  },
+  "build": {
+    "appId": "com.slock.editor",
+    "productName": "Slock",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    }
+  }
+}
