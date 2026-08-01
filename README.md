@@ -1,6 +1,10 @@
 # 🔒 Slock - Secure Encrypted Text Editor
 
 <p align="center">
+  <img src="assets/ss1.png" alt="Slock Application Screenshot" width="100%" />
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Electron-v33.4-47848F?style=for-the-badge&logo=electron&logoColor=white" alt="Electron" />
   <img src="https://img.shields.io/badge/TypeScript-5.6-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Vite-6.0-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
